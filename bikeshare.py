@@ -9,16 +9,18 @@ CITY_DATA = { 'chicago': 'chicago.csv',
 def get_filters():
     print('Hello! Let\'s explore some US bikeshare data!')
     # input enter city chicago, new york city, washington
-    city = input('Enter the city: ')
+    city = input('Enter the city: ').lower()
     while city not in ['chicago', 'new york city', 'washington']:
         city = input('Please, Enter the city is chicago, new york city and washington: ').lower()
     # input enter months from january to december
-    month = input('Enter the month: ')
+    month = input('Enter the month: ').lower()
     while month not in ['all',"january","february","march","april","may","june","july","august","september","october","november","december"]:
         month = input('ENTER MONTH all, january, february, ... , december : ').lower()
 
     # input enter day 
-    day = input('ENTER DAY : ').lower()
+    day = input('Enter day: ').lower()
+    while day not in ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'all']:
+        day = input('Please, Enter the day to monday from sunday: ').lower()
 
     print('-'*40)
     return city, month, day
@@ -106,31 +108,60 @@ def user_stats(df):
 
     # output Display counts of user types
     counts_user = df['User Type'].value_counts()
-    print(counts_user)
+    print('User type: ', counts_user)
 
     # output Display counts of gender
-    counts_gender = df['Gender'].value_counts()
-    print(counts_gender)
+    try: 
+        counts_gender = df['Gender'].value_counts()
+        print('Gender type: ',counts_gender)
+    except KeyError:
+      print("\nGender Types:\nNo data available for this month.")
 
     # output Display earliest, most recent, and most common year of birth
-    early_bd = int(df['Birth Year'].min())
-    recent_bd = int(df['Birth Year'].max())
-    most_common_bd = int(df['Birth Year'].value_counts().idxmax())
-    
-    print('Earliest year of birth: ',early_bd,', most recent year of brith: ',recent_bd,', most common year of birth: ',most_common_bd)
+    try:
+        early_bd = int(df['Birth Year'].min())
+        print('Earliest year of birth: ',early_bd)
+    except KeyError:
+        print("\nEarliest Year:\nNo data available for this month.")
+    try:
+        recent_bd = int(df['Birth Year'].max())
+        print('most recent year of brith: ',recent_bd)
+    except KeyError:
+      print("\nMost Recent Year:\nNo data available for this month.")    
+    try:    
+        most_common_bd = int(df['Birth Year'].value_counts().idxmax())
+        print('most common year of birth: ',most_common_bd)
+    except KeyError:
+      print("\nMost Common Year:\nNo data available for this month.")
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
 
+def display_raw_data(df):
+    i = 5
+    raw = input("Do you want to display raw data yes or no: ").lower() 
+    pd.set_option('display.max_columns',200)
 
+    while True:            
+        if raw == 'no':
+            break
+        elif raw == 'yes':
+            print(df.head(i))
+            raw = input("Do you want to display raw data yes or no: ") 
+            i += 5
+        else:
+            raw = input("\nYour input is invalid. Please enter only 'yes' or 'no'\n").lower()
+            
 def main():
     while True:
         city, month, day = get_filters()
         df = load_data(city, month, day)
+        
         time_stats(df)
         station_stats(df)
         trip_duration_stats(df)
         user_stats(df)
+        display_raw_data(df)
 
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':
